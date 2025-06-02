@@ -22,41 +22,17 @@ def create_app(config_name=None):
     # Configura CORS para permitir solicitudes desde tu frontend de Node.js
     # Es crucial que 'http://localhost:5173' coincida con la URL de tu frontend
     CORS(app, origins=[
-    'http://localhost:5173',
-    'http://localhost:8080', # <--- ¡AGREGA ESTA LÍNEA!
-    'https://*.lovable.app',
-    'https://*.lovableproject.com'
-])
+        'http://localhost:5173',
+        'http://localhost:8080', # <--- ¡AGREGA ESTA LÍNEA!
+        'https://*.lovable.app',
+        'https://*.lovableproject.com'
+    ])
 
     # Inicializa la base de datos con la aplicación Flask
     init_db(app)
 
     # Registra el Blueprint con las rutas de ventas
     app.register_blueprint(sales_bp)
-
-    # Bloque para interactuar con la base de datos al iniciar la aplicación
-    # Esto asegura que la base de datos esté lista y que las tablas se creen.
-    with app.app_context():
-        try:
-            # Intenta ejecutar una consulta simple para verificar la conexión a PostgreSQL
-            db.session.execute(text('SELECT 1'))
-            print("✅ Conexión exitosa a PostgreSQL")
-
-            # Crea todas las tablas definidas en tus modelos (si no existen)
-            db.create_all()
-            print("✅ Tablas de base de datos creadas/verificadas")
-
-            # Muestra la URL de conexión (sin la contraseña por seguridad en la consola)
-            db_url = app.config['SQLALCHEMY_DATABASE_URI']
-            # Extrae la parte después del '@' para ocultar las credenciales
-            safe_url = db_url.split('@')[1] if '@' in db_url else db_url
-            print(f"🔗 Conectado a: postgresql://***@{safe_url}")
-
-        except Exception as e:
-            # Si hay un error al conectar o crear tablas, imprímelo
-            print(f"❌ Error conectando a PostgreSQL o creando tablas: {e}")
-            print("🔧 Verifica que PostgreSQL esté ejecutándose y que las credenciales en .env sean correctas.")
-            # Opcional: podrías querer salir de la aplicación aquí si la DB es crítica
 
     # Ruta principal de la API que devuelve información general
     @app.route('/')
@@ -87,3 +63,7 @@ if __name__ == '__main__':
     # Inicia el servidor Flask en modo depuración (útil para desarrollo)
     # host='0.0.0.0' permite que la app sea accesible desde otras máquinas en la red local
     app.run(debug=True, host='0.0.0.0', port=5000)
+else:
+    # Esta línea asegura que la instancia 'app' esté disponible
+    # cuando Gunicorn importe este módulo para iniciar el servicio.
+    app = create_app()
