@@ -2,39 +2,49 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from config import config # Importa el diccionario de configuración
-from models import init_db, db # Importa la función de inicialización de DB y la instancia de DB
+# from models import init_db, db # COMENTA o ELIMINA esta línea por ahora para depuración
+from models import db # SOLO importa la instancia 'db' si la necesitas, NO la función init_db aquí
 from routes.sales_routes import sales_bp # Importa el Blueprint de rutas de ventas
 import os
-from sqlalchemy import text # Necesario para ejecutar la consulta de prueba de la base de datos
+# from sqlalchemy import text # No es necesario aquí si movemos la verificación de DB
+
+# Asegúrate de que 'db' es una instancia global de SQLAlchemy, pero no inicializada con la app aquí.
+# Si models/__init__.py tiene db = SQLAlchemy(), eso está bien.
+# La inicialización real (db.init_app) debe hacerse dentro de create_app.
 
 def create_app(config_name=None):
     """
     Función de fábrica para crear y configurar la aplicación Flask.
     Permite usar diferentes configuraciones (desarrollo, producción).
     """
-    # Si no se especifica un nombre de configuración, usa la variable de entorno FLASK_CONFIG o 'default'
     if config_name is None:
         config_name = os.environ.get('FLASK_CONFIG', 'default')
 
-    app = Flask(__name__) # Inicializa la aplicación Flask
-    app.config.from_object(config[config_name]) # Carga la configuración desde config.py
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
 
-    # Configura CORS para permitir solicitudes desde tu frontend de Node.js
-    # Es crucial que 'http://localhost:5173' coincida con la URL de tu frontend
+    # Asegúrate de que Flask-SQLAlchemy se inicialice *después* de cargar la configuración
+    # y *antes* de registrar Blueprints si esos Blueprints usan la instancia 'db'.
+    db.init_app(app) # <--- Mueve la inicialización de 'db' aquí si no está ya.
+
     CORS(app, origins=[
         'http://localhost:5173',
-        'http://localhost:8080', # <--- ¡AGREGA ESTA LÍNEA!
+        'http://localhost:8080',
         'https://*.lovable.app',
-        'https://*.lovableproject.com'
+        'https://*.lovableproject.com',
+        os.environ.get('RENDER_FRONTEND_URL') # Añade la URL de Render Frontend aquí si quieres, o maneja en frontend
     ])
 
-    # Inicializa la base de datos con la aplicación Flask
-    init_db(app)
-
-    # Registra el Blueprint con las rutas de ventas
     app.register_blueprint(sales_bp)
 
-    # Ruta principal de la API que devuelve información general
+    # Si planeas usar Flask-Migrate, inicialízalo aquí también:
+    # from flask_migrate import Migrate
+    # migrate = Migrate(app, db)
+
+
+    # Elimina cualquier bloque de app_context() o db.create_all() de aquí.
+    # Esas operaciones se harán *después* del despliegue exitoso.
+
     @app.route('/')
     def index():
         return jsonify({
@@ -53,17 +63,15 @@ def create_app(config_name=None):
 
     return app
 
-# Punto de entrada principal cuando se ejecuta el script directamente
+# Esta línea asegura que la instancia 'app' esté disponible
+# cuando Gunicorn importe este módulo para iniciar el servicio.
+# No queremos que se ejecute la parte de db.create_all() o db.session.execute() en este punto.
+app = create_app()
+
 if __name__ == '__main__':
-    app = create_app() # Crea la aplicación con la configuración por defecto
-    print("🚀 Iniciando servidor Flask con PostgreSQL...")
-    print("📊 Sales Dashboard API")
-    print("🐘 Base de datos: PostgreSQL")
-    print("🌐 Servidor: http://localhost:5000")
-    # Inicia el servidor Flask en modo depuración (útil para desarrollo)
-    # host='0.0.0.0' permite que la app sea accesible desde otras máquinas en la red local
+    # Puedes ejecutar app.run() aquí para desarrollo local.
+    # Para db.create_all() local, usarías:
+    # with app.app_context():
+    #    db.create_all()
+    #    print("Tablas creadas localmente.")
     app.run(debug=True, host='0.0.0.0', port=5000)
-else:
-    # Esta línea asegura que la instancia 'app' esté disponible
-    # cuando Gunicorn importe este módulo para iniciar el servicio.
-    app = create_app()
