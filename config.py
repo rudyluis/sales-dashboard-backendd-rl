@@ -13,7 +13,7 @@ class Config:
     # Preferimos leer de variables de entorno (DB_HOST, DB_PORT, etc.)
     # Si no están presentes, usamos valores por defecto (localhost, 5432, etc.)
 
-    
+
     ##DB_HOST = os.environ.get('DB_HOST') or 'localhost'
     ##DB_PORT = os.environ.get('DB_PORT') or '5432'
     #3DB_NAME = os.environ.get('DB_NAME') or 'sales_dashboard'
@@ -21,9 +21,9 @@ class Config:
     ##DB_PASSWORD = os.environ.get('DB_PASSWORD') or '123456' # ¡Asegúrate de que esta sea la contraseña correcta!
     DB_HOST = os.environ.get('DB_HOST') or 'dpg-d0llaopr0fns738g24og-a.oregon-postgres.render.com'
     DB_PORT = os.environ.get('DB_PORT') or '5432'
-    DB_NAME = os.environ.get('DB_NAME') or 'dbgame_sdhn'
+    DB_NAME = os.environ.get('DB_NAME') or 'dbgame_sfhn'
     DB_USER = os.environ.get('DB_USER') or 'dbgame_sfhn_user' # ¡Asegúrate de que este sea el usuario correcto de tu DB!
-    DB_PASSWORD = os.environ.get('DB_PASSWORD') or '123456' # ¡Asegúrate de que esta sea la contraseña correcta!
+    DB_PASSWORD = os.environ.get('DB_PASSWORD') or '5UEkhDNGJaMQfAa5sNfHlZbPrFkoGCGF' # ¡Asegúrate de que esta sea la contraseña correcta!
 
     # URL completa de conexión a la base de datos para SQLAlchemy
     # Usa DATABASE_URL de entorno si existe, de lo contrario, construye una con los valores anteriores
