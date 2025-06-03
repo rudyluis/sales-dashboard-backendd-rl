@@ -25,4 +25,5 @@ EXPOSE 5000
 # -b 0.0.0.0:5000: escucha en todas las interfaces en el puerto 5000
 # En Render, usarás "gunicorn -w 4 -b 0.0.0.0:$PORT app:app" como Start Command directamente,
 # pero mantenerlo aquí es útil para pruebas locales con Docker.
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+#CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:500, wsgi:app"]
