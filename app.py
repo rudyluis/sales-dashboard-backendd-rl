@@ -67,7 +67,7 @@ def create_app(config_name=None):
 # cuando Gunicorn importe este módulo para iniciar el servicio.
 # No queremos que se ejecute la parte de db.create_all() o db.session.execute() en este punto.
 app = create_app()
-
+CORS(app, resources={r"/*": {"origins": "*"}})
 if __name__ == '__main__':
     # Puedes ejecutar app.run() aquí para desarrollo local.
     # Para db.create_all() local, usarías:
